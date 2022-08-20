@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    # url: jdbc:h2:file:/data/demo
+    # url: jdbc:h2:mem:testdb
+    url: jdbc:mysql://localhost:3306/whataptest?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: jinhajeong
+    password: jinhajeong1!@
+    #driverClassName: org.h2.Driver
+    driverClassName: com.mysql.cj.jdbc.Driver
+   
+  #h2:
+  #  console.path: /h2-console
+  #  console.settings.trace: false
+  #  console.enabled: true  
+  #  spring.h2.console.settings.web-allow-others: false #remote access를 disable 한다.
+  jpa:
+    #spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    spring.jpa.database-platform: org.hibernate.dialect.MySQL8Dialect
+    defer-datasource-initialization: true # 초기화 시마다 스키마 초기화 되기 때문에 data.sql이 하이버네이트 초기화 후에 작동하도록 설정해주어야 한다.
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+server:
+  port: 8081
