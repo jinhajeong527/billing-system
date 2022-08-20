@@ -11,7 +11,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -47,8 +46,8 @@ public class Product {
     @Column(name = "ProductType", nullable = true)
     private String productType;
 
-    @Transient
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    //@Transient
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "product")
     @JsonIgnore
     private List<PriceHistory> priceHistories;
 

@@ -3,6 +3,9 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ProductPayload;
 import com.example.demo.entity.Product;
+import com.example.demo.exception.ProductNotFoundException;
 import com.example.demo.service.ProductService;
 
 @RestController
@@ -27,29 +31,39 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<?> registerNewProduct(@RequestBody ProductPayload productPayload) {
-        Product productPayloadTmp = productService.registerNewProduct(productPayload);
-        return new ResponseEntity<>(productPayloadTmp, HttpStatus.OK);
+        Product product = productService.registerNewProduct(productPayload);
+        return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
+        List<ProductPayload> productPayloads = productService.getAllProducts();
+        return new ResponseEntity<>(productPayloads, HttpStatus.OK);
+    }
+
+    @GetMapping("/paging") // 파라미터에 page, size, sort를 키로 정해서 값 보내주면 되고, sort의 경우는 name,desc 와 같이 보내줄 수 있다. 
+    public ResponseEntity<?> getProducts(@PageableDefault(page = 0, size = 10) Pageable pageable) {
+        Page<Product> products = productService.getProducts(pageable);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<?> deleteProduct(@PathVariable(value="productId") Integer productId) {
-        productService.deleteProduct(productId);
+    public ResponseEntity<?> deleteProduct(@PathVariable(value = "productId") Integer productId) {
+        try {
+            productService.deleteProduct(productId);
+        } catch(ProductNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
     @PutMapping("/{productId}")
-    public ResponseEntity<?> editProductInfo(@PathVariable(value="productId") Integer productId, @RequestBody ProductPayload productPayload) {
-        Product product = new Product();
+    public ResponseEntity<?> editProductInfo(@PathVariable(value = "productId") Integer productId, @RequestBody ProductPayload productPayload) {
+        Product product;
         try {
-            product = productService.updateProduct(productId, productPayload);
-        } catch(RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            product  = productService.editProductInfo(productId, productPayload);
+        } catch(ProductNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
