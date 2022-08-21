@@ -4,6 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
 public interface PriceHistoryRepository extends  JpaRepository<PriceHistory, Integer>  {
-
     PriceHistory findFirstByProductOrderByCreateDateDesc(Product product);
 }

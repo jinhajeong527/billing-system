@@ -36,17 +36,20 @@ public class Product {
 
     @Column(name = "Name", nullable = false)
     private String name;
+
     // 최소 단위
     @Column(name = "MinCpu", nullable = true)
     private Float minCpu;
+
     // 단위
     @Column(name = "ChargeUnit", nullable = true)
     private String chargeUnit;
+    
     // 상품 유형(Application, Cloud, BSM, etc..)
     @Column(name = "ProductType", nullable = true)
     private String productType;
 
-    //@Transient
+    @Transient
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "product")
     @JsonIgnore
     private List<PriceHistory> priceHistories;

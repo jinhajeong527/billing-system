@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ProductPayload;
 import com.example.demo.entity.Product;
+import com.example.demo.exception.PriceInfoNotExistException;
 import com.example.demo.exception.ProductNotFoundException;
 import com.example.demo.service.ProductService;
 
@@ -31,20 +32,29 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<?> registerNewProduct(@RequestBody ProductPayload productPayload) {
-        Product product = productService.registerNewProduct(productPayload);
+        Product product;
+        try {
+            product = productService.registerNewProduct(productPayload);
+        } catch(PriceInfoNotExistException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
         List<ProductPayload> productPayloads = productService.getAllProducts();
+        if(productPayloads == null) 
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(productPayloads, HttpStatus.OK);
     }
 
     @GetMapping("/paging") // 파라미터에 page, size, sort를 키로 정해서 값 보내주면 되고, sort의 경우는 name,desc 와 같이 보내줄 수 있다. 
     public ResponseEntity<?> getProducts(@PageableDefault(page = 0, size = 10) Pageable pageable) {
-        Page<Product> products = productService.getProducts(pageable);
-        return new ResponseEntity<>(products, HttpStatus.OK);
+        Page<ProductPayload> pagedProductPayloads = productService.getProducts(pageable);
+        if(pagedProductPayloads == null) 
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(pagedProductPayloads, HttpStatus.OK);
     }
 
     @DeleteMapping("/{productId}")

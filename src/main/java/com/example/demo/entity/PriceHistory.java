@@ -11,16 +11,20 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 // 가격 변경 이력
 @DynamicInsert
 @DynamicUpdate
 @Entity
+@Table(name = "price_history")
 public class PriceHistory {
 
     @Id
@@ -30,6 +34,7 @@ public class PriceHistory {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ProductId", nullable = false)
+    @JsonIgnore
     private Product product;
 
     @Column(name = "CreateDate", nullable = false)
@@ -61,7 +66,6 @@ public class PriceHistory {
     public void setProduct(Product product) {
         this.product = product;
     }
-
 
     public LocalDateTime getCreateDate() {
         return createDate;
