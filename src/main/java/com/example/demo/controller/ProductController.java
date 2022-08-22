@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ProductPayload;
 import com.example.demo.entity.Product;
-import com.example.demo.exception.PriceInfoNotExistException;
-import com.example.demo.exception.ProductNotFoundException;
 import com.example.demo.service.ProductService;
 
 @RestController
@@ -32,19 +30,14 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<?> registerNewProduct(@RequestBody ProductPayload productPayload) {
-        Product product;
-        try {
-            product = productService.registerNewProduct(productPayload);
-        } catch(PriceInfoNotExistException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        Product product = productService.registerNewProduct(productPayload);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
         List<ProductPayload> productPayloads = productService.getAllProducts();
-        if(productPayloads == null) 
+        if(productPayloads == null)
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(productPayloads, HttpStatus.OK);
     }
@@ -59,22 +52,13 @@ public class ProductController {
 
     @DeleteMapping("/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable(value = "productId") Integer productId) {
-        try {
-            productService.deleteProduct(productId);
-        } catch(ProductNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        productService.deleteProduct(productId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
     @PutMapping("/{productId}")
     public ResponseEntity<?> editProductInfo(@PathVariable(value = "productId") Integer productId, @RequestBody ProductPayload productPayload) {
-        Product product;
-        try {
-            product  = productService.editProductInfo(productId, productPayload);
-        } catch(ProductNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        Product product = productService.editProductInfo(productId, productPayload);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 

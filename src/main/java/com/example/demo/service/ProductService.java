@@ -52,7 +52,8 @@ public class ProductService {
     @Transactional
     public List<ProductPayload> getAllProducts() {
         List<Product> products = productRepository.findAll();
-        if(products ==  null) return null;
+        
+        if(products.isEmpty()) return null;
 
         List<ProductPayload> productPayloads = getProductPayloadList(products);
         return productPayloads;
@@ -61,8 +62,10 @@ public class ProductService {
     @Transactional
     public Page<ProductPayload> getProducts(Pageable pageable) {
         Page<Product> pagedProducts = productRepository.findAll(pageable);
-        if(pagedProducts ==  null) return null;
 
+        if(pagedProducts.getContent().isEmpty()) return null;
+
+        // List<Product>를 PriceHistory 엔티티 추가하여 List<ProductPayload>로 만들어 준 후에 Page<ProductPayload>로 다시 바꿔준다.
         List<Product> products = pagedProducts.getContent();
         List<ProductPayload> productPayloads = getProductPayloadList(products);
         Page<ProductPayload> pagedProductPayloads = new PageImpl<>(productPayloads, pagedProducts.getPageable(), pagedProducts.getTotalPages());

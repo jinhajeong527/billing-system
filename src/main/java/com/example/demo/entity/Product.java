@@ -49,7 +49,6 @@ public class Product {
     @Column(name = "ProductType", nullable = true)
     private String productType;
 
-    @Transient
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "product")
     @JsonIgnore
     private List<PriceHistory> priceHistories;
