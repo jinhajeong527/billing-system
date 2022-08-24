@@ -14,10 +14,8 @@ import org.springframework.stereotype.Service;
 import com.example.demo.dto.ProductPayload;
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
-import com.example.demo.entity.ProductChangeHistory;
 import com.example.demo.exception.PriceInfoNotExistException;
 import com.example.demo.exception.ProductNotFoundException;
-import com.example.demo.model.OperationEnum;
 import com.example.demo.repository.PriceHistoryRepository;
 import com.example.demo.repository.ProductChangeHistoryRepository;
 import com.example.demo.repository.ProductRepository;
@@ -37,15 +35,11 @@ public class ProductService {
     public Product registerNewProduct(ProductPayload productPayload) {
         Product product = productPayload.getProduct();
         PriceHistory priceHistory = productPayload.getPriceHistory();
-
         if(priceHistory == null)
-            throw new PriceInfoNotExistException("Price info is needed to register new product");
-
+            throw new PriceInfoNotExistException("상품 등록을 위해서는 가격 정보도 입력해야 합니다.");
         product.add(priceHistory);
         product = productRepository.save(product);
         priceHistoryRepository.save(priceHistory);
-        
-        saveProductInfoChangeLog(product, OperationEnum.CREATE);
         return product;
     }
 
@@ -74,11 +68,11 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(Integer productId) {
+    public Product deleteProduct(Integer productId) {
         Product product = productRepository.findById(productId)
                             .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
         productRepository.delete(product);
-        saveProductInfoChangeLog(product, OperationEnum.DELETE);
+        return product;
     }
 
     @Transactional
@@ -98,14 +92,9 @@ public class ProductService {
             priceHistoryRepository.save(priceHistory);
         }
         product = productRepository.save(product);
-        saveProductInfoChangeLog(product, OperationEnum.UPDATE);
         return product;
     }
-    // CUD API 호출 이력 테이블에 로그 데이터 저장하는 메서드
-    private void saveProductInfoChangeLog(Product product, OperationEnum operationEnum) {
-        ProductChangeHistory productChangeHistory = new ProductChangeHistory(product.getId(), operationEnum);
-        productChangeHistoryRepository.save(productChangeHistory);
-    }
+
     // List<Product>에 PriceHistory에서 가장 최근의 가격 정보 추가해서 List<ProductPayLoad>로 리턴하는 메서드
     private List<ProductPayload> getProductPayloadList(List<Product> products) {
         List<ProductPayload> productPayloads = new ArrayList<>();

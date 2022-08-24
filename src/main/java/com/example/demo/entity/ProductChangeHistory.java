@@ -2,7 +2,6 @@ package com.example.demo.entity;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Table;
 
@@ -26,10 +25,16 @@ public class ProductChangeHistory {
     @GeneratedValue(strategy  = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "ProductId", nullable = false)
+    @Column(name = "ProductId", nullable = true)
     private Integer productId;
 
-    @Enumerated(EnumType.STRING)
+    @Column(name = "ProductName", nullable = true)
+    private String productName;
+
+    @Column(name = "ProductType", nullable = true)
+    private String productType;
+
+    @Enumerated(EnumType.STRING) // enum 이름을 DB에 저장한다.
     @Column(name = "Operation", nullable = false)
     private OperationEnum operation;
 
@@ -42,6 +47,12 @@ public class ProductChangeHistory {
 
     public ProductChangeHistory(Integer productId, OperationEnum operation) {
         this.productId = productId;
+        this.operation = operation;
+    }
+
+    public ProductChangeHistory(String productName, String productType, OperationEnum operation) {
+        this.productName = productName;
+        this.productType = productType;
         this.operation = operation;
     }
 
@@ -59,6 +70,22 @@ public class ProductChangeHistory {
 
     public void setProductId(Integer productId) {
         this.productId = productId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
     }
 
     public OperationEnum getOperation() {
