@@ -7,6 +7,8 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,6 +21,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.example.demo.model.ProductTypeEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 // 상품
@@ -45,8 +48,9 @@ public class Product {
     private String chargeUnit;
     
     // 상품 유형(Application, Cloud, BSM, etc..)
+    @Enumerated(EnumType.STRING)
     @Column(name = "ProductType", nullable = true)
-    private String productType;
+    private ProductTypeEnum productType;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "product")
     @JsonIgnore
@@ -63,7 +67,7 @@ public class Product {
     public Product() {
     }
     
-    public Product(String name, Float minCpu, String chargeUnit, String productType, List<PriceHistory> priceHistories) {
+    public Product(String name, Float minCpu, String chargeUnit, ProductTypeEnum productType, List<PriceHistory> priceHistories) {
         this.name = name;
         this.minCpu = minCpu;
         this.chargeUnit = chargeUnit;
@@ -103,11 +107,11 @@ public class Product {
         this.chargeUnit = chargeUnit;
     }
 
-    public String getProductType() {
+    public ProductTypeEnum getProductType() {
         return productType;
     }
 
-    public void setProductType(String productType) {
+    public void setProductType(ProductTypeEnum productType) {
         this.productType = productType;
     }
 

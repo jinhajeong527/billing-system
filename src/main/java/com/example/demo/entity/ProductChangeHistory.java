@@ -8,6 +8,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.example.demo.model.OperationEnum;
+import com.example.demo.model.ProductTypeEnum;
 import com.example.demo.model.ResultEnum;
 
 import javax.persistence.Entity;
@@ -16,6 +17,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
 
 @Entity
@@ -33,9 +35,10 @@ public class ProductChangeHistory {
     private String productName;
 
     @Column(name = "ProductType", nullable = true)
-    private String productType;
+    private ProductTypeEnum productType;
 
     @Column(name = "ErrorMessage", nullable = true)
+    @Lob
     private String errorMessage;
 
     @Enumerated(EnumType.STRING)
@@ -58,8 +61,8 @@ public class ProductChangeHistory {
         this.result = result;
         this.operation = operation;
     }
-    
-    public ProductChangeHistory(Integer productId, String productName, String productType, ResultEnum result,
+
+    public ProductChangeHistory(Integer productId, String productName, ProductTypeEnum productType, ResultEnum result,
             OperationEnum operation) {
         this.productId = productId;
         this.productName = productName;
@@ -94,11 +97,11 @@ public class ProductChangeHistory {
         this.productName = productName;
     }
 
-    public String getProductType() {
+    public ProductTypeEnum getProductType() {
         return productType;
     }
 
-    public void setProductType(String productType) {
+    public void setProductType(ProductTypeEnum productType) {
         this.productType = productType;
     }
 
