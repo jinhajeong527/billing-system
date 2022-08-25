@@ -8,6 +8,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.example.demo.model.OperationEnum;
+import com.example.demo.model.ResultEnum;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -34,6 +35,13 @@ public class ProductChangeHistory {
     @Column(name = "ProductType", nullable = true)
     private String productType;
 
+    @Column(name = "ErrorMessage", nullable = true)
+    private String errorMessage;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Result", nullable = false)
+    private ResultEnum result;
+
     @Enumerated(EnumType.STRING) // enum 이름을 DB에 저장한다.
     @Column(name = "Operation", nullable = false)
     private OperationEnum operation;
@@ -45,16 +53,22 @@ public class ProductChangeHistory {
     public ProductChangeHistory() {
     }
 
-    public ProductChangeHistory(Integer productId, OperationEnum operation) {
+    public ProductChangeHistory(String errorMessage, ResultEnum result, OperationEnum operation) {
+        this.errorMessage = errorMessage;
+        this.result = result;
+        this.operation = operation;
+    }
+    
+    public ProductChangeHistory(Integer productId, String productName, String productType, ResultEnum result,
+            OperationEnum operation) {
         this.productId = productId;
+        this.productName = productName;
+        this.productType = productType;
+        this.result = result;
         this.operation = operation;
     }
 
-    public ProductChangeHistory(String productName, String productType, OperationEnum operation) {
-        this.productName = productName;
-        this.productType = productType;
-        this.operation = operation;
-    }
+
 
     public Integer getId() {
         return id;
@@ -88,6 +102,22 @@ public class ProductChangeHistory {
         this.productType = productType;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public ResultEnum getResult() {
+        return result;
+    }
+
+    public void setResult(ResultEnum result) {
+        this.result = result;
+    }
+
     public OperationEnum getOperation() {
         return operation;
     }
@@ -103,6 +133,8 @@ public class ProductChangeHistory {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
+
+  
     
 
     

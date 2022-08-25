@@ -1,16 +1,18 @@
 package com.example.demo.aspect;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.example.demo.dto.ProductPayload;
+import com.example.demo.entity.Product;
 import com.example.demo.entity.ProductChangeHistory;
 import com.example.demo.model.OperationEnum;
+import com.example.demo.model.ResultEnum;
 import com.example.demo.repository.ProductChangeHistoryRepository;
 
 @Aspect
@@ -23,27 +25,44 @@ public class CudApiCallLoggingAspect {
     @Pointcut("execution(* com.example.demo.controller.ProductController.registerNewProduct(..)) || " + 
               "execution(* com.example.demo.controller.ProductController.editProductInfo(..)) || " +
               "execution(* com.example.demo.controller.ProductController.deleteProduct(..))")
-    public void productCUDMethods() {
+    public void productCUDCOntrollerMethods() {
+    }
+
+    @Pointcut("execution(* com.example.demo.service.ProductService.registerNewProduct(..)) || " + 
+              "execution(* com.example.demo.service.ProductService.editProductInfo(..)) || " +
+              "execution(* com.example.demo.service.ProductService.deleteProduct(..))")
+    public void productCUDServiceMethods() {
     }
     
-    @After("productCUDMethods()")
-    public void afterCallingRegisterProductService(JoinPoint joinPoint) {
+    @AfterReturning(value = "productCUDServiceMethods()", returning = "returnValue")
+    public void afterReturningFromProductService(JoinPoint joinPoint, Product returnValue) {
         String methodName = joinPoint.getSignature().getName();
-        Object arg = joinPoint.getArgs()[0];
-
         ProductChangeHistory productChangeHistory = new ProductChangeHistory();
 
         if("registerNewProduct".equals(methodName)) {
-            ProductPayload productPayload = (ProductPayload) arg;
-            productChangeHistory = new ProductChangeHistory(productPayload.getProduct().getName(), 
-                                                                                 productPayload.getProduct().getProductType(),
-                                                                                 OperationEnum.CREATE);
+            productChangeHistory = new ProductChangeHistory(returnValue.getId(), returnValue.getName(), returnValue.getProductType(),
+                                                            ResultEnum.SUCCESS, OperationEnum.CREATE);
         } else if("editProductInfo".equals(methodName)) {
-            Integer productId = (Integer) arg;
-            productChangeHistory = new ProductChangeHistory(productId, OperationEnum.UPDATE);
+            productChangeHistory = new ProductChangeHistory(returnValue.getId(), returnValue.getName(), returnValue.getProductType(),
+                                                            ResultEnum.SUCCESS, OperationEnum.UPDATE);
         } else if("deleteProduct".equals(methodName)) {
-            Integer productId = (Integer) arg;
-            productChangeHistory = new ProductChangeHistory(productId, OperationEnum.DELETE);
+            productChangeHistory = new ProductChangeHistory(returnValue.getId(), returnValue.getName(), returnValue.getProductType(),
+                                                            ResultEnum.SUCCESS, OperationEnum.DELETE);
+        }
+        productChangeHistoryRepository.saveAndFlush(productChangeHistory);
+    }
+    
+    @AfterThrowing(value = "productCUDCOntrollerMethods()", throwing = "exception")
+    public void afterExceptionThrownFromProductService (JoinPoint joinPoint, Exception exception) {
+        String methodName = joinPoint.getSignature().getName();
+        ProductChangeHistory productChangeHistory = new ProductChangeHistory();
+
+        if("registerNewProduct".equals(methodName)) {
+            productChangeHistory = new ProductChangeHistory(exception.getMessage(), ResultEnum.FAIL, OperationEnum.CREATE);
+        } else if("editProductInfo".equals(methodName)) {
+            productChangeHistory = new ProductChangeHistory(exception.getMessage(), ResultEnum.FAIL, OperationEnum.UPDATE);
+        } else if("deleteProduct".equals(methodName)) {
+            productChangeHistory = new ProductChangeHistory(exception.getMessage(), ResultEnum.FAIL, OperationEnum.DELETE);
         }
         productChangeHistoryRepository.saveAndFlush(productChangeHistory);
     }
