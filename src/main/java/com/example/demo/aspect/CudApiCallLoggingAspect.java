@@ -25,7 +25,7 @@ public class CudApiCallLoggingAspect {
     @Pointcut("execution(* com.example.demo.controller.ProductController.registerNewProduct(..)) || " + 
               "execution(* com.example.demo.controller.ProductController.editProductInfo(..)) || " +
               "execution(* com.example.demo.controller.ProductController.deleteProduct(..))")
-    public void productCUDCOntrollerMethods() {
+    public void productCUDControllerMethods() {
     }
 
     @Pointcut("execution(* com.example.demo.service.ProductService.registerNewProduct(..)) || " + 
@@ -52,7 +52,7 @@ public class CudApiCallLoggingAspect {
         productChangeHistoryRepository.saveAndFlush(productChangeHistory);
     }
     
-    @AfterThrowing(value = "productCUDCOntrollerMethods()", throwing = "exception")
+    @AfterThrowing(value = "productCUDControllerMethods()", throwing = "exception")
     public void afterExceptionThrownFromProductService (JoinPoint joinPoint, Exception exception) {
         String methodName = joinPoint.getSignature().getName();
         ProductChangeHistory productChangeHistory = new ProductChangeHistory();
