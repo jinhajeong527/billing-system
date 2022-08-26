@@ -34,7 +34,8 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> otherException(Exception e, HttpServletRequest request) {
-        String errorMessage = e.getMessage().substring(0, 200);
+        int index = e.getMessage().length() > 100 ? 100 : e.getMessage().length();
+        String errorMessage = e.getMessage().substring(0, index);
         productChangeHistoryForException(errorMessage, request.getMethod());
       
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
