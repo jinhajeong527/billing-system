@@ -24,10 +24,10 @@ import com.example.demo.service.ProductService;
 @RestController
 @RequestMapping(path = "api/product")
 public class ProductController {
-
+    // Exception Handling은 @RestControllerAdvice ControllerExceptionHandler클래스에서 처리한다.
     @Autowired
     ProductService productService;
-
+    
     @PostMapping
     public ResponseEntity<?> registerNewProduct(@RequestBody ProductPayload productPayload) {
         Product product = productService.registerNewProduct(productPayload);

@@ -43,7 +43,6 @@ public class ControllerExceptionHandler {
 
     private void productChangeHistoryForException(String errorMessage, String method) {
         ProductChangeHistory productChangeHistory = null;
-        System.out.println("null맞지? "+productChangeHistory);
         if("POST".equals(method)) {
             productChangeHistory = new ProductChangeHistory(errorMessage, ResultEnum.FAIL, OperationEnum.CREATE);
         } else if("PUT".equals(method)) {

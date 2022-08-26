@@ -22,6 +22,7 @@ import com.example.demo.repository.ProductRepository;
 
 @Service
 public class ProductService {
+    // Product CUD Operation 성공적으로 수행 후 CudApiCallLoggingAspect AOP 클래스에서 @AfterReturning을 통해 호출 로그 기록되도록 함
     @Autowired
     ProductRepository productRepository;
 
@@ -109,8 +110,5 @@ public class ProductService {
         }
         return productPayloads;
     }
-
-    
-
     
 }
