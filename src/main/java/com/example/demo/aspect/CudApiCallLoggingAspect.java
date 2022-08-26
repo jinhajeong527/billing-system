@@ -22,12 +22,6 @@ public class CudApiCallLoggingAspect {
     @Autowired
     ProductChangeHistoryRepository productChangeHistoryRepository;
 
-    @Pointcut("execution(* com.example.demo.controller.ProductController.registerNewProduct(..)) || " + 
-              "execution(* com.example.demo.controller.ProductController.editProductInfo(..)) || " +
-              "execution(* com.example.demo.controller.ProductController.deleteProduct(..))")
-    public void productCUDControllerMethods() {
-    }
-
     @Pointcut("execution(* com.example.demo.service.ProductService.registerNewProduct(..)) || " + 
               "execution(* com.example.demo.service.ProductService.editProductInfo(..)) || " +
               "execution(* com.example.demo.service.ProductService.deleteProduct(..))")
@@ -51,21 +45,7 @@ public class CudApiCallLoggingAspect {
         }
         productChangeHistoryRepository.saveAndFlush(productChangeHistory);
     }
-    
-    @AfterThrowing(value = "productCUDControllerMethods()", throwing = "exception")
-    public void afterExceptionThrownFromProductService (JoinPoint joinPoint, Exception exception) {
-        String methodName = joinPoint.getSignature().getName();
-        ProductChangeHistory productChangeHistory = new ProductChangeHistory();
-
-        if("registerNewProduct".equals(methodName)) {
-            productChangeHistory = new ProductChangeHistory(exception.getMessage(), ResultEnum.FAIL, OperationEnum.CREATE);
-        } else if("editProductInfo".equals(methodName)) {
-            productChangeHistory = new ProductChangeHistory(exception.getMessage(), ResultEnum.FAIL, OperationEnum.UPDATE);
-        } else if("deleteProduct".equals(methodName)) {
-            productChangeHistory = new ProductChangeHistory(exception.getMessage(), ResultEnum.FAIL, OperationEnum.DELETE);
-        }
-        productChangeHistoryRepository.saveAndFlush(productChangeHistory);
-    }
+  
 }
 
     

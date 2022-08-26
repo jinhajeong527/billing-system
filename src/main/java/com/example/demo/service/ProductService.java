@@ -36,7 +36,7 @@ public class ProductService {
         Product product = productPayload.getProduct();
         PriceHistory priceHistory = productPayload.getPriceHistory();
         if(priceHistory == null)
-            throw new PriceInfoNotExistException("상품 등록을 위해서는 가격 정보도 입력해야 합니다.");
+            throw new PriceInfoNotExistException("Price info is needed to register new product");
         product.add(priceHistory);
         product = productRepository.save(product);
         priceHistoryRepository.save(priceHistory);

@@ -22,20 +22,28 @@ public class ControllerExceptionHandler {
     ProductChangeHistoryRepository productChangeHistoryRepository;
 
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<?> productNotFoundException(ProductNotFoundException e) {
+    public ResponseEntity<?> productNotFoundException(ProductNotFoundException e, HttpServletRequest request) {
+        productChangeHistoryForException(e.getMessage(), request.getMethod());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(PriceInfoNotExistException.class)
-    public ResponseEntity<?> priceInfoNotExistException(PriceInfoNotExistException e) {
+    public ResponseEntity<?> priceInfoNotExistException(PriceInfoNotExistException e, HttpServletRequest request) {
+        productChangeHistoryForException(e.getMessage(), request.getMethod());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidFormatException.class)
     public ResponseEntity<?> invalidFormatException(InvalidFormatException e, HttpServletRequest request) {
-        ProductChangeHistory productChangeHistory = new ProductChangeHistory();
-        String method = request.getMethod();
         String errorMessage = e.getMessage().substring(0, 200);
+        productChangeHistoryForException(errorMessage, request.getMethod());
+      
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    private void productChangeHistoryForException(String errorMessage, String method) {
+        ProductChangeHistory productChangeHistory = null;
+        System.out.println("null맞지? "+productChangeHistory);
         if("POST".equals(method)) {
             productChangeHistory = new ProductChangeHistory(errorMessage, ResultEnum.FAIL, OperationEnum.CREATE);
         } else if("PUT".equals(method)) {
@@ -44,7 +52,6 @@ public class ControllerExceptionHandler {
             productChangeHistory = new ProductChangeHistory(errorMessage, ResultEnum.FAIL, OperationEnum.DELETE);
         }
         if(productChangeHistory !=  null) productChangeHistoryRepository.saveAndFlush(productChangeHistory);
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
     
 }
