@@ -33,7 +33,8 @@ public class ProductChangeHistory {
 
     @Column(name = "ProductName", nullable = true)
     private String productName;
-
+    
+    @Enumerated(EnumType.STRING)
     @Column(name = "ProductType", nullable = true)
     private ProductTypeEnum productType;
 
