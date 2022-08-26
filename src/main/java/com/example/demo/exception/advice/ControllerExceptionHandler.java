@@ -14,7 +14,6 @@ import com.example.demo.exception.ProductNotFoundException;
 import com.example.demo.model.OperationEnum;
 import com.example.demo.model.ResultEnum;
 import com.example.demo.repository.ProductChangeHistoryRepository;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 @RestControllerAdvice
 public class ControllerExceptionHandler {
@@ -33,8 +32,8 @@ public class ControllerExceptionHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(InvalidFormatException.class)
-    public ResponseEntity<?> invalidFormatException(InvalidFormatException e, HttpServletRequest request) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> otherException(Exception e, HttpServletRequest request) {
         String errorMessage = e.getMessage().substring(0, 200);
         productChangeHistoryForException(errorMessage, request.getMethod());
       
