@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.demo.entity.ProductChangeHistory;
 import com.example.demo.exception.PriceInfoNotExistException;
+import com.example.demo.exception.ProductInfoNotExistException;
 import com.example.demo.exception.ProductNotFoundException;
 import com.example.demo.model.OperationEnum;
 import com.example.demo.model.ResultEnum;
@@ -20,14 +21,8 @@ public class ControllerExceptionHandler {
     @Autowired
     ProductChangeHistoryRepository productChangeHistoryRepository;
 
-    @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<?> productNotFoundException(ProductNotFoundException e, HttpServletRequest request) {
-        productChangeHistoryForException(e.getMessage(), request.getMethod());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(PriceInfoNotExistException.class)
-    public ResponseEntity<?> priceInfoNotExistException(PriceInfoNotExistException e, HttpServletRequest request) {
+    @ExceptionHandler({ProductInfoNotExistException.class, PriceInfoNotExistException.class, ProductNotFoundException.class})
+    public ResponseEntity<?> priceInfoNotExistException(RuntimeException e, HttpServletRequest request) {
         productChangeHistoryForException(e.getMessage(), request.getMethod());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }

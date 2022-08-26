@@ -15,6 +15,7 @@ import com.example.demo.dto.ProductPayload;
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
 import com.example.demo.exception.PriceInfoNotExistException;
+import com.example.demo.exception.ProductInfoNotExistException;
 import com.example.demo.exception.ProductNotFoundException;
 import com.example.demo.repository.PriceHistoryRepository;
 import com.example.demo.repository.ProductChangeHistoryRepository;
@@ -35,9 +36,13 @@ public class ProductService {
     @Transactional
     public Product registerNewProduct(ProductPayload productPayload) {
         Product product = productPayload.getProduct();
+        if(product == null) 
+            throw new ProductInfoNotExistException("Product info is needed to register new product");
+
         PriceHistory priceHistory = productPayload.getPriceHistory();
         if(priceHistory == null)
             throw new PriceInfoNotExistException("Price info is needed to register new product");
+            
         product.add(priceHistory);
         product = productRepository.save(product);
         priceHistoryRepository.save(priceHistory);
