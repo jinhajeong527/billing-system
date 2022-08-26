@@ -67,12 +67,11 @@ public class Product {
     public Product() {
     }
     
-    public Product(String name, Float minCpu, String chargeUnit, ProductTypeEnum productType, List<PriceHistory> priceHistories) {
+    public Product(String name, Float minCpu, String chargeUnit, ProductTypeEnum productType) {
         this.name = name;
         this.minCpu = minCpu;
         this.chargeUnit = chargeUnit;
         this.productType = productType;
-        this.priceHistories = priceHistories;
     }
 
     public Integer getId() {

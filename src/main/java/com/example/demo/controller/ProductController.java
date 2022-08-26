@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.PostAndPutProductPayload;
 import com.example.demo.dto.ProductPayload;
 import com.example.demo.entity.Product;
 import com.example.demo.service.ProductService;
@@ -29,7 +30,7 @@ public class ProductController {
     ProductService productService;
     
     @PostMapping
-    public ResponseEntity<?> registerNewProduct(@RequestBody ProductPayload productPayload) {
+    public ResponseEntity<?> registerNewProduct(@RequestBody PostAndPutProductPayload productPayload) {
         Product product = productService.registerNewProduct(productPayload);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
@@ -57,7 +58,7 @@ public class ProductController {
     }
     
     @PutMapping("/{productId}")
-    public ResponseEntity<?> editProductInfo(@PathVariable(value = "productId") Integer productId, @RequestBody ProductPayload productPayload) {
+    public ResponseEntity<?> editProductInfo(@PathVariable(value = "productId") Integer productId, @RequestBody PostAndPutProductPayload productPayload) {
         Product product = productService.editProductInfo(productId, productPayload);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }

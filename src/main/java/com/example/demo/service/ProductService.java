@@ -11,6 +11,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
+import com.example.demo.dto.PostAndPutProductPayload;
 import com.example.demo.dto.ProductPayload;
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
@@ -34,15 +37,19 @@ public class ProductService {
     ProductChangeHistoryRepository productChangeHistoryRepository;
 
     @Transactional
-    public Product registerNewProduct(ProductPayload productPayload) {
-        Product product = productPayload.getProduct();
-        if(product == null) 
+    public Product registerNewProduct(PostAndPutProductPayload productPayload) {
+        // 입력되지 않은 상품 정보가 있는지 체크한다.
+        if(checkIfThereAnyNullProductInfo(productPayload))
             throw new ProductInfoNotExistException("Product info is needed to register new product");
 
-        PriceHistory priceHistory = productPayload.getPriceHistory();
-        if(priceHistory == null)
+        Product product = new Product(productPayload.getName(), productPayload.getMinCpu(), 
+                                      productPayload.getChargeUnit(),  productPayload.getProductType());
+
+        BigDecimal price = productPayload.getPrice();
+        if(price == null)
             throw new PriceInfoNotExistException("Price info is needed to register new product");
-            
+        PriceHistory priceHistory = new PriceHistory(price);
+
         product.add(priceHistory);
         product = productRepository.save(product);
         priceHistoryRepository.save(priceHistory);
@@ -82,23 +89,21 @@ public class ProductService {
     }
 
     @Transactional
-    public Product editProductInfo(Integer productId, ProductPayload productPayload) {
+    public Product editProductInfo(Integer productId, PostAndPutProductPayload productPayload) {
         Product product = productRepository.findById(productId)
                             .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
 
-        if(productPayload.getProduct() != null) {
-            product.setProductType(productPayload.getProduct().getProductType());
-            product.setMinCpu(productPayload.getProduct().getMinCpu());
-            product.setChargeUnit(productPayload.getProduct().getChargeUnit());
-            product.setName(productPayload.getProduct().getName()); 
-        }
+        if(productPayload.getName() != null) product.setName(productPayload.getName());
+        if(productPayload.getProductType() != null) product.setProductType(productPayload.getProductType());
+        if(productPayload.getMinCpu() != null) product.setMinCpu(productPayload.getMinCpu());
+        if(productPayload.getChargeUnit() != null) product.setChargeUnit(productPayload.getChargeUnit());
 
-        PriceHistory priceHistory = productPayload.getPriceHistory();
-        
-        if(priceHistory != null) {
-            product.add(productPayload.getPriceHistory());
+        if(productPayload.getPrice() != null) {
+            PriceHistory priceHistory = new PriceHistory(productPayload.getPrice());
+            product.add(priceHistory);
             priceHistoryRepository.save(priceHistory);
         }
+
         product = productRepository.save(product);
         return product;
     }
@@ -116,6 +121,11 @@ public class ProductService {
             productPayloads.add(productPayload);
         }
         return productPayloads;
+    }
+
+    private boolean checkIfThereAnyNullProductInfo(PostAndPutProductPayload productPayload) {
+        return (productPayload.getName() == null || productPayload.getMinCpu() == null || 
+                productPayload.getChargeUnit() == null || productPayload.getProductType() == null);
     }
     
 }
