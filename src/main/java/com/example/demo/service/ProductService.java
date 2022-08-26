@@ -81,10 +81,12 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                             .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
 
-        product.setProductType(productPayload.getProduct().getProductType());
-        product.setMinCpu(productPayload.getProduct().getMinCpu());
-        product.setChargeUnit(productPayload.getProduct().getChargeUnit());
-        product.setName(productPayload.getProduct().getName());
+        if(productPayload.getProduct() != null) {
+            product.setProductType(productPayload.getProduct().getProductType());
+            product.setMinCpu(productPayload.getProduct().getMinCpu());
+            product.setChargeUnit(productPayload.getProduct().getChargeUnit());
+            product.setName(productPayload.getProduct().getName()); 
+        }
 
         PriceHistory priceHistory = productPayload.getPriceHistory();
         
