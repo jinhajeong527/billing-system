@@ -7,13 +7,16 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
+import com.example.demo.dto.PaginationPayload;
 import com.example.demo.dto.PostAndPutProductPayload;
+import com.example.demo.dto.ProductListPayload;
 import com.example.demo.dto.ProductPayload;
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
@@ -67,7 +70,8 @@ public class ProductService {
     }
 
     @Transactional
-    public Page<ProductPayload> getProducts(Pageable pageable) {
+    public ProductListPayload getProducts(PaginationPayload paginationPayload) {
+        Pageable pageable = makePageRequest(paginationPayload);
         Page<Product> pagedProducts = productRepository.findAll(pageable);
 
         if(pagedProducts.getContent().isEmpty()) return null;
@@ -75,9 +79,21 @@ public class ProductService {
         // List<Product>를 PriceHistory 엔티티 추가하여 List<ProductPayload>로 만들어 준 후에 Page<ProductPayload>로 다시 바꿔준다.
         List<Product> products = pagedProducts.getContent();
         List<ProductPayload> productPayloads = getProductPayloadList(products);
-        Page<ProductPayload> pagedProductPayloads = new PageImpl<>(productPayloads, pagedProducts.getPageable(), pagedProducts.getTotalPages());
-        
-        return pagedProductPayloads;
+        ProductListPayload productListPayload = new ProductListPayload(productPayloads, pagedProducts.getTotalPages(), pagedProducts.getNumber());
+
+        return productListPayload;
+    }
+
+    private Pageable makePageRequest(PaginationPayload paginationPayload) {
+        Sort sort = null;
+        if(paginationPayload.getSort() != null) {
+            if("desc".equals(paginationPayload.getOrder()))
+                sort = Sort.by(paginationPayload.getSort()).descending();
+            else
+                sort = Sort.by(paginationPayload.getSort());
+        }
+        Pageable pageble = PageRequest.of(paginationPayload.getPage(), paginationPayload.getSize(), sort);
+        return pageble;
     }
 
     @Transactional
@@ -113,11 +129,9 @@ public class ProductService {
         List<ProductPayload> productPayloads = new ArrayList<>();
 
         for(Product product : products) {
-            ProductPayload productPayload = new ProductPayload();
-            productPayload.setProduct(product);
             // 해당 프로덕트가 가진 PriceHistory 중 가장 최근에 등록된 정보를 가져온다.
             PriceHistory priceHistory = priceHistoryRepository.findFirstByProductOrderByCreateDateDesc(product);
-            productPayload.setPriceHistory(priceHistory);
+            ProductPayload productPayload = new ProductPayload(product, priceHistory);
             productPayloads.add(productPayload);
         }
         return productPayloads;

@@ -6,6 +6,14 @@ import com.example.demo.entity.Product;
 public class ProductPayload {
     private Product product;
     private PriceHistory priceHistory;
+
+    public ProductPayload() {
+    }
+
+    public ProductPayload(Product product, PriceHistory priceHistory) {
+        this.product = product;
+        this.priceHistory = priceHistory;
+    }
     
     public Product getProduct() {
         return product;
@@ -19,5 +27,5 @@ public class ProductPayload {
     public void setPriceHistory(PriceHistory priceHistory) {
         this.priceHistory = priceHistory;
     }
-    
+   
 }

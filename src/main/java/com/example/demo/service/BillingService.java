@@ -95,7 +95,7 @@ public class BillingService {
     private double getHourlyFeePerCore(int totalHour, int productPrice) {
         return ((double)productPrice) / totalHour;
     }
-
+    // targetMonth의 전체 시간을 구한다.
     private int getHoursOfTheMonth(int targetMonth) {
         Calendar cal = Calendar.getInstance();
         cal.set(2022, targetMonth - 1, 1);
@@ -111,7 +111,8 @@ public class BillingService {
 
     private BillingPayload parseMeteringList() throws StreamReadException, DatabindException, MalformedURLException, IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        BillingPayload billingPayload = objectMapper.readValue(new URL("file:src/main/resources/meteringList.json"), BillingPayload.class);
+        TypeReference<BillingPayload> typeRef = new TypeReference<BillingPayload>(){};
+        BillingPayload billingPayload = objectMapper.readValue(new URL("file:src/main/resources/meteringList.json"), typeRef);
         return billingPayload;
     }
 
