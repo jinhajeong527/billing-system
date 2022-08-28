@@ -73,7 +73,6 @@ public class ProductService {
     public ProductListPayload getProducts(PaginationPayload paginationPayload) {
         Pageable pageable = makePageRequest(paginationPayload);
         Page<Product> pagedProducts = productRepository.findAll(pageable);
-
         if(pagedProducts.getContent().isEmpty()) return null;
 
         // List<Product>를 PriceHistory 엔티티 추가하여 List<ProductPayload>로 만들어 준 후에 Page<ProductPayload>로 다시 바꿔준다.
@@ -124,10 +123,9 @@ public class ProductService {
         return product;
     }
 
-    // List<Product>에 PriceHistory에서 가장 최근의 가격 정보 추가해서 List<ProductPayLoad>로 리턴하는 메서드
-    private List<ProductPayload> getProductPayloadList(List<Product> products) {
+    // Product의 List<PriceHistory>에서 가장 최근의 가격 정보 추가해서 List<ProductPayLoad>로 리턴하는 메서드
+    public List<ProductPayload> getProductPayloadList(List<Product> products) {
         List<ProductPayload> productPayloads = new ArrayList<>();
-
         for(Product product : products) {
             // 해당 프로덕트가 가진 PriceHistory 중 가장 최근에 등록된 정보를 가져온다.
             PriceHistory priceHistory = priceHistoryRepository.findFirstByProductOrderByCreateDateDesc(product);

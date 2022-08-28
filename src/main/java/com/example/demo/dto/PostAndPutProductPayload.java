@@ -10,6 +10,14 @@ public class PostAndPutProductPayload {
     private String chargeUnit;
     private BigDecimal price;
 
+    public PostAndPutProductPayload(ProductTypeEnum productType, String name, Float minCpu, String chargeUnit,
+            BigDecimal price) {
+        this.productType = productType;
+        this.name = name;
+        this.minCpu = minCpu;
+        this.chargeUnit = chargeUnit;
+        this.price = price;
+    }
     public ProductTypeEnum getProductType() {
         return productType;
     }
