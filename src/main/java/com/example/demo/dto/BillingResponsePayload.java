@@ -8,7 +8,7 @@ public class BillingResponsePayload {
     List<MeteringResponseInfo> meteringList;
     Integer calculatedTotalHourPerCore;
     Double totalFee;
-    Integer totlaCore;
+    Integer totalCore;
 
     public List<MeteringResponseInfo> getMeteringList() {
         return meteringList;
@@ -28,11 +28,11 @@ public class BillingResponsePayload {
     public void setTotalFee(Double totalFee) {
         this.totalFee = totalFee;
     }
-    public Integer getTotlaCore() {
-        return totlaCore;
+    public Integer getTotalCore() {
+        return totalCore;
     }
-    public void setTotlaCore(Integer totlaCore) {
-        this.totlaCore = totlaCore;
+    public void setTotalCore(Integer totalCore) {
+        this.totalCore = totalCore;
     }
     public void add(MeteringResponseInfo meteringResponseInfo) { 
         if(meteringList == null) {

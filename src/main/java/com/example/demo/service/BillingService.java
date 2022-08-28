@@ -69,7 +69,7 @@ public class BillingService {
 
         int calculatedTotalHourPerCore = 0;
         double totalFee = 0.0;
-        int totlaCore = 0;
+        int totalCore = 0;
         // 5) 로그에서 보기 편하게 출력 및 프론트에서 보기 좋게 날짜 나타내기 위해 포맷 바꿔준다.
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -108,7 +108,7 @@ public class BillingService {
                 String ip = keySetIterator.next();
                 int coreCount = ipAndCoreMap.get(ip);
                 // 총 몇개의 코어가 사용되었는지도 청구서에 정보 알려주기 위해서 카운팅 한다.
-                totlaCore += coreCount;
+                totalCore += coreCount;
                 // 계산 중인 시간까지 대상 IP에 총 몇개의 코어가 사용되었는지를 로그로 출력한다.
                 LOG.info("Total {} Core(s) Used Till {}", formatDate);
                 LOG.info("At {}, {} Uses {} Core(s). Hourly Fee Per Core Is {}", formatDate, ip, coreCount, hourlyFeePerCore);
@@ -123,10 +123,10 @@ public class BillingService {
         }
         LOG.info("Total Fee For Target Month Is: {} KRW", totalFee);
         LOG.info("Total Uesd Hour For Target Month Is: {} hour", calculatedTotalHourPerCore);
-        LOG.info("Total {} Cores Used", totlaCore);
+        LOG.info("Total {} Cores Used", totalCore);
         billingResponsePayload.setCalculatedTotalHourPerCore(calculatedTotalHourPerCore);
         billingResponsePayload.setTotalFee(totalFee);
-        billingResponsePayload.setTotlaCore(totlaCore);
+        billingResponsePayload.setTotalCore(totalCore);
         return billingResponsePayload;
     }
 
