@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -13,11 +15,15 @@ import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.BillingPayload;
 import com.example.demo.dto.MeteringInfo;
 import com.example.demo.dto.OID;
+import com.example.demo.entity.Product;
+import com.example.demo.repository.PriceHistoryRepository;
+import com.example.demo.repository.ProductRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -28,17 +34,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class BillingService {
     private static final Logger LOG =   LoggerFactory.getLogger(BillingService.class);
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    PriceHistoryRepository priceHistoryRepository;
 
-    public void getBillingInfo(int targetMonth) throws StreamReadException, DatabindException, MalformedURLException, IOException {
+    public void getBillingInfo(int productId, int targetYear, int targetMonth) throws StreamReadException, DatabindException, MalformedURLException, IOException {
         // 프로젝트의 사용 내역 담은 Json 데이터 파싱한다.
+        LOG.info("Started Parsing meteringList.json for {} / {}", targetYear, targetMonth);
         BillingPayload billingPayload = parseMeteringList();
         List<MeteringInfo> meteringInfos = billingPayload.getMeteringList();
 
         // 청구액 확인 Month의 총 Hour를 구한다.
-        int totalHour = getHoursOfTheMonth(targetMonth);
-        
+        int totalHour = getHoursOfTheMonth(targetYear, targetMonth);
+        LOG.info("Full Fee Will Be Charged If {} Hours Used Per Core", totalHour);
         // Product Price 정보를 통해 시간 당 Core 한 개의 사용 비용을 구한다.
-        double hourlyFeePerCore = getHourlyFeePerCore(totalHour, 25000);
+        double hourlyFeePerCore = getHourlyFeePerCore(totalHour, productId);
+        LOG.info("{} KRW Will Be Charged Per Hour For Each Core Usage", hourlyFeePerCore);
         
         /* 
         과금 유형이 CORE라고 하고, 한 개의 코어당 7월에 full로 사용했을 때 (24시간 * 31일) 사용료가 25,000KRW 라고 한다면 
@@ -91,14 +103,20 @@ public class BillingService {
         LOG.info("Total Fee For Target Month Is: {} KRW", totalFee);
         LOG.info("Total Uesd Hour For Target Month Is: {} hour", calculatedTotalHourPerCore);
     }
+
     // 제품 비용에서 해당 월의 전체 시간으로 나눠준다.
-    private double getHourlyFeePerCore(int totalHour, int productPrice) {
-        return ((double)productPrice) / totalHour;
+    private double getHourlyFeePerCore(int totalHour, int productId) {
+        Product product = productRepository.findById(productId).get();
+        // 상품의 가장 최근 가격 가져온다.
+        BigDecimal productPrice = priceHistoryRepository.findFirstByProductOrderByCreateDateDesc(product).getPrice();
+        BigDecimal total = new BigDecimal(totalHour);
+        BigDecimal devided = productPrice.divide(total, 2, RoundingMode.HALF_EVEN);
+        return devided.doubleValue();
     }
     // targetMonth의 전체 시간을 구한다.
-    private int getHoursOfTheMonth(int targetMonth) {
+    private int getHoursOfTheMonth(int targetYear, int targetMonth) {
         Calendar cal = Calendar.getInstance();
-        cal.set(2022, targetMonth - 1, 1);
+        cal.set(targetYear, targetMonth - 1, 1);
         return cal.getActualMaximum(Calendar.DAY_OF_MONTH) * 24;
     }
 

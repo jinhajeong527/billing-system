@@ -14,16 +14,19 @@ public class ProductPayload {
         this.product = product;
         this.priceHistory = priceHistory;
     }
-    
+
     public Product getProduct() {
         return product;
     }
+
     public void setProduct(Product product) {
         this.product = product;
     }
+
     public PriceHistory getPriceHistory() {
         return priceHistory;
     }
+    
     public void setPriceHistory(PriceHistory priceHistory) {
         this.priceHistory = priceHistory;
     }

@@ -23,9 +23,11 @@ public class BillingController {
 
     @GetMapping
     public ResponseEntity<?> getBillingInfo() throws StreamReadException, DatabindException, MalformedURLException, IOException {
+        int productId = 1;
+        int targetYear = 2021;
         int targetMonth = 7;
         // 요금 계산하려는 month를 인자로 넣어준다.
-        billingservice.getBillingInfo(targetMonth);
+        billingservice.getBillingInfo(productId, targetYear, targetMonth);
         return null;
     }
 
