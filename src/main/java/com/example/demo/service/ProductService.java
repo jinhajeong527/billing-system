@@ -70,6 +70,15 @@ public class ProductService {
     }
 
     @Transactional
+    public ProductPayload getProductById(Integer productId) {
+        Product product = productRepository.findById(productId)
+                            .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
+        PriceHistory priceHistory = priceHistoryRepository.findFirstByProductOrderByCreateDateDesc(product);
+        ProductPayload productPayload = new ProductPayload(product, priceHistory);
+        return productPayload;
+    }
+
+    @Transactional
     public ProductListPayload getProducts(PaginationPayload paginationPayload) {
         Pageable pageable = makePageRequest(paginationPayload);
         Page<Product> pagedProducts = productRepository.findAll(pageable);
@@ -139,5 +148,7 @@ public class ProductService {
         return (productPayload.getName() == null || productPayload.getMinCpu() == null || 
                 productPayload.getChargeUnit() == null || productPayload.getProductType() == null);
     }
+
+    
     
 }
