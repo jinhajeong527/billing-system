@@ -16,10 +16,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import com.example.demo.model.ProductTypeEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -57,11 +55,9 @@ public class Product {
     private List<PriceHistory> priceHistories;
 
     @Column(name = "CreateDate", nullable = false)
-    @CreationTimestamp
     private LocalDateTime createDate;
 
     @Column(name = "UpdateDate", nullable = false)
-    @UpdateTimestamp
     private LocalDateTime updateDate;
 
     public Product() {
@@ -72,6 +68,16 @@ public class Product {
         this.minCpu = minCpu;
         this.chargeUnit = chargeUnit;
         this.productType = productType;
+    }
+    
+    public Product(String name, Float minCpu, String chargeUnit, ProductTypeEnum productType, LocalDateTime createDate,
+            LocalDateTime updateDate) {
+        this.name = name;
+        this.minCpu = minCpu;
+        this.chargeUnit = chargeUnit;
+        this.productType = productType;
+        this.createDate = createDate;
+        this.updateDate = updateDate;
     }
 
     public Integer getId() {

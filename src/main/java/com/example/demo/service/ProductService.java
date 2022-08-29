@@ -3,7 +3,7 @@ package com.example.demo.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.Transactional;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -11,8 +11,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import com.example.demo.dto.PaginationPayload;
 import com.example.demo.dto.PostAndPutProductPayload;
@@ -44,18 +46,16 @@ public class ProductService {
         // 입력되지 않은 상품 정보가 있는지 체크한다.
         if(checkIfThereAnyNullProductInfo(productPayload))
             throw new ProductInfoNotExistException("Product info is needed to register new product");
-
+        LocalDateTime createDate = LocalDateTime.now();
         Product product = new Product(productPayload.getName(), productPayload.getMinCpu(), 
-                                      productPayload.getChargeUnit(),  productPayload.getProductType());
-
+                                      productPayload.getChargeUnit(), productPayload.getProductType(),
+                                      createDate, createDate);
         BigDecimal price = productPayload.getPrice();
         if(price == null)
             throw new PriceInfoNotExistException("Price info is needed to register new product");
         PriceHistory priceHistory = new PriceHistory(price);
-
         product.add(priceHistory);
         product = productRepository.save(product);
-        priceHistoryRepository.save(priceHistory);
         return product;
     }
 
@@ -92,18 +92,6 @@ public class ProductService {
         return productListPayload;
     }
 
-    private Pageable makePageRequest(PaginationPayload paginationPayload) {
-        Sort sort = null;
-        if(paginationPayload.getSort() != null) {
-            if("desc".equals(paginationPayload.getOrder()))
-                sort = Sort.by(paginationPayload.getSort()).descending();
-            else
-                sort = Sort.by(paginationPayload.getSort());
-        }
-        Pageable pageble = PageRequest.of(paginationPayload.getPage(), paginationPayload.getSize(), sort);
-        return pageble;
-    }
-
     @Transactional
     public Product deleteProduct(Integer productId) {
         Product product = productRepository.findById(productId)
@@ -116,7 +104,7 @@ public class ProductService {
     public Product editProductInfo(Integer productId, PostAndPutProductPayload productPayload) {
         Product product = productRepository.findById(productId)
                             .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
-
+        
         if(productPayload.getName() != null) product.setName(productPayload.getName());
         if(productPayload.getProductType() != null) product.setProductType(productPayload.getProductType());
         if(productPayload.getMinCpu() != null) product.setMinCpu(productPayload.getMinCpu());
@@ -128,6 +116,7 @@ public class ProductService {
             priceHistoryRepository.save(priceHistory);
         }
 
+        product.setUpdateDate(LocalDateTime.now());
         product = productRepository.save(product);
         return product;
     }
@@ -149,6 +138,16 @@ public class ProductService {
                 productPayload.getChargeUnit() == null || productPayload.getProductType() == null);
     }
 
-    
+    private Pageable makePageRequest(PaginationPayload paginationPayload) {
+        Sort sort = null;
+        if(paginationPayload.getSort() != null) {
+            if("desc".equals(paginationPayload.getOrder()))
+                sort = Sort.by(paginationPayload.getSort()).descending();
+            else
+                sort = Sort.by(paginationPayload.getSort());
+        }
+        Pageable pageble = PageRequest.of(paginationPayload.getPage(), paginationPayload.getSize(), sort);
+        return pageble;
+    }
     
 }
