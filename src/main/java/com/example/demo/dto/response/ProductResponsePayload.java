@@ -1,16 +1,16 @@
-package com.example.demo.dto;
+package com.example.demo.dto.response;
 
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
 
-public class ProductPayload {
+public class ProductResponsePayload {
     private Product product;
     private PriceHistory priceHistory;
 
-    public ProductPayload() {
+    public ProductResponsePayload() {
     }
 
-    public ProductPayload(Product product, PriceHistory priceHistory) {
+    public ProductResponsePayload(Product product, PriceHistory priceHistory) {
         this.product = product;
         this.priceHistory = priceHistory;
     }

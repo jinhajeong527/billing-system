@@ -1,26 +1,26 @@
-package com.example.demo.dto;
+package com.example.demo.dto.response;
 
 import java.util.List;
 
-public class ProductListPayload {
-    private List<ProductPayload> productListPayload;
+public class ProductsResonsePayload {
+    private List<ProductResponsePayload> productListPayload;
     private Integer totalPages;
     private Integer currentPage;
 
-    public ProductListPayload() {
+    public ProductsResonsePayload() {
     }
 
-    public ProductListPayload(List<ProductPayload> productListPayload, Integer totalPages, Integer currentPage) {
+    public ProductsResonsePayload(List<ProductResponsePayload> productListPayload, Integer totalPages, Integer currentPage) {
         this.productListPayload = productListPayload;
         this.totalPages = totalPages;
         this.currentPage = currentPage;
     }
 
-    public List<ProductPayload> getProductListPayload() {
+    public List<ProductResponsePayload> getProductListPayload() {
         return productListPayload;
     }
 
-    public void setProductListPayload(List<ProductPayload> productListPayload) {
+    public void setProductListPayload(List<ProductResponsePayload> productListPayload) {
         this.productListPayload = productListPayload;
     }
 

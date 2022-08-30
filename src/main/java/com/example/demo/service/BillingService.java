@@ -3,7 +3,6 @@ package com.example.demo.service;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -13,19 +12,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.transaction.Transactional;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dto.BillingPayload;
-import com.example.demo.dto.BillingResponsePayload;
+import com.example.demo.dto.BillingInfo;
 import com.example.demo.dto.MeteringInfo;
-import com.example.demo.dto.MeteringResponseInfo;
 import com.example.demo.dto.OID;
+import com.example.demo.dto.request.BillingRequest;
+import com.example.demo.dto.response.BillingResponsePayload;
+import com.example.demo.dto.response.MeteringResponsePayload;
 import com.example.demo.entity.Product;
+import com.example.demo.exception.BillingSystemException;
 import com.example.demo.repository.PriceHistoryRepository;
 import com.example.demo.repository.ProductRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,26 +40,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class BillingService {
     private static final Logger LOG =   LoggerFactory.getLogger(BillingService.class);
+    
     @Autowired
     ProductRepository productRepository;
     @Autowired
     PriceHistoryRepository priceHistoryRepository;
 
     @Transactional
-    public BillingResponsePayload getBillingInfo(int productId, int targetYear, int targetMonth) throws StreamReadException, DatabindException, MalformedURLException, IOException {
+    public BillingResponsePayload getBillingInfo(BillingRequest billingRequest) throws BillingSystemException {
         // 1) 프로젝트의 사용 내역 담은 Json 데이터 파싱한다.
-        LOG.info("Started Parsing meteringList.json for {} / {}", targetYear, targetMonth);
-        BillingPayload billingPayload = parseMeteringList();
+        LOG.info("Started Parsing meteringList.json For {} / {}", billingRequest.getTargetYear(), billingRequest.getTargetMonth());
+        BillingInfo billingPayload = parseMeteringList();
         List<MeteringInfo> meteringInfos = billingPayload.getMeteringList();
 
         // 2) 리턴할 떄는 클라이언트에서 필요한 정보만 담아주기 위해서 BillingResponsePayload 객체 새롭게 만든다.
         BillingResponsePayload billingResponsePayload = new BillingResponsePayload();
         // 3) 청구액 확인 Month의 총 Hour를 구한다.
-        int totalHour = getHoursOfTheMonth(targetYear, targetMonth);
+        int totalHour = getHoursOfTheMonth(billingRequest.getTargetYear(), billingRequest.getTargetMonth());
         LOG.info("Full Fee Will Be Charged If {} Hours Used Per Core", totalHour);
 
         // 4) Product Price 정보를 통해 시간 당 Core 한 개의 사용 비용을 구한다.
-        double hourlyFeePerCore = getHourlyFeePerCore(totalHour, productId);
+        double hourlyFeePerCore = getHourlyFeePerCore(totalHour, billingRequest.getProductId());
         LOG.info("{} KRW Will Be Charged Per Hour For Each Core Usage", hourlyFeePerCore);
         
         /* 
@@ -82,7 +85,7 @@ public class BillingService {
             List<OID> oids = parseOidsList(meteringInfo.getOidsJson());
 
             // 7) MeteringInfo에서 필요한 정보만 추출해 MeteringResponseInfo에 값을 담아준다.
-            MeteringResponseInfo meteringResponseInfo = makeBillingResponsePayload(meteringInfo, oids, formatDate);
+            MeteringResponsePayload meteringResponseInfo = makeBillingResponsePayload(meteringInfo, oids, formatDate);
             billingResponsePayload.add(meteringResponseInfo);
            
            
@@ -130,15 +133,15 @@ public class BillingService {
         return billingResponsePayload;
     }
 
-    private MeteringResponseInfo makeBillingResponsePayload(MeteringInfo meteringInfo, List<OID> oids, String formatDate) {
-        MeteringResponseInfo meteringResponseInfo = 
-        new MeteringResponseInfo(meteringInfo.getPcode(), meteringInfo.getPname(), meteringInfo.getAgent(), 
+    private MeteringResponsePayload makeBillingResponsePayload(MeteringInfo meteringInfo, List<OID> oids, String formatDate) {
+        MeteringResponsePayload meteringResponseInfo = 
+        new MeteringResponsePayload(meteringInfo.getPcode(), meteringInfo.getPname(), meteringInfo.getAgent(), 
         meteringInfo.getHost(), meteringInfo.getMcore(), meteringInfo.getUrls(), formatDate, oids);
         return meteringResponseInfo;
     }
 
     // 제품 비용에서 해당 월의 전체 시간으로 나눠준다.
-    private double getHourlyFeePerCore(int totalHour, int productId) {
+    public double getHourlyFeePerCore(int totalHour, int productId) {
         Product product = productRepository.findById(productId).get();
         // 상품의 가장 최근 가격 가져온다.
         BigDecimal productPrice = priceHistoryRepository.findFirstByProductOrderByCreateDateDesc(product).getPrice();
@@ -153,17 +156,27 @@ public class BillingService {
         return cal.getActualMaximum(Calendar.DAY_OF_MONTH) * 24;
     }
 
-    private List<OID> parseOidsList(String oidsJson) throws JsonMappingException, JsonProcessingException {
+    private List<OID> parseOidsList(String oidsJson) throws BillingSystemException {
         ObjectMapper objectMapper = new ObjectMapper();
         TypeReference<List<OID>> typeRef = new TypeReference<List<OID>>(){};
-        List<OID> list = objectMapper.readValue(oidsJson, typeRef);
-        return list;
+        List<OID> oids;
+        try {
+            oids = objectMapper.readValue(oidsJson, typeRef);
+        } catch(IOException e) {
+            throw new BillingSystemException("Issue has happended while parsing billing details", e.getCause());
+        }
+        return oids;
     }
 
-    private BillingPayload parseMeteringList() throws StreamReadException, DatabindException, MalformedURLException, IOException {
+    private BillingInfo parseMeteringList() throws BillingSystemException {
         ObjectMapper objectMapper = new ObjectMapper();
-        TypeReference<BillingPayload> typeRef = new TypeReference<BillingPayload>(){};
-        BillingPayload billingPayload = objectMapper.readValue(new URL("file:src/main/resources/meteringList.json"), typeRef);
+        TypeReference<BillingInfo> typeRef = new TypeReference<BillingInfo>(){};
+        BillingInfo billingPayload;
+        try {
+            billingPayload = objectMapper.readValue(new URL("file:src/main/resources/meteringList.json"), typeRef);
+        } catch(IOException e) {
+            throw new BillingSystemException("Issue has happended while parsing meteringList.json", e.getCause());
+        }
         return billingPayload;
     }
 

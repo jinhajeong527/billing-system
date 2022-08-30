@@ -1,19 +1,19 @@
-package com.example.demo.dto;
+package com.example.demo.dto.response;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BillingResponsePayload {
 
-    List<MeteringResponseInfo> meteringList;
+    List<MeteringResponsePayload> meteringList;
     Integer calculatedTotalHourPerCore;
     Double totalFee;
     Integer totalCore;
 
-    public List<MeteringResponseInfo> getMeteringList() {
+    public List<MeteringResponsePayload> getMeteringList() {
         return meteringList;
     }
-    public void setMeteringList(List<MeteringResponseInfo> meteringList) {
+    public void setMeteringList(List<MeteringResponsePayload> meteringList) {
         this.meteringList = meteringList;
     }
     public Integer getCalculatedTotalHourPerCore() {
@@ -34,7 +34,7 @@ public class BillingResponsePayload {
     public void setTotalCore(Integer totalCore) {
         this.totalCore = totalCore;
     }
-    public void add(MeteringResponseInfo meteringResponseInfo) { 
+    public void add(MeteringResponsePayload meteringResponseInfo) { 
         if(meteringList == null) {
             meteringList = new ArrayList<>();
         }

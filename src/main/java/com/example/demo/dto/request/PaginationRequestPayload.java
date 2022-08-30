@@ -1,6 +1,6 @@
-package com.example.demo.dto;
+package com.example.demo.dto.request;
 
-public class PaginationPayload {
+public class PaginationRequestPayload {
     Integer page;
     Integer size;
     String sort;

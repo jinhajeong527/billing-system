@@ -1,16 +1,16 @@
-package com.example.demo.dto;
+package com.example.demo.dto.request;
 
 import java.math.BigDecimal;
 import com.example.demo.model.ProductTypeEnum;
 
-public class PostAndPutProductPayload {
+public class ProductRequestPayload {
     private ProductTypeEnum productType;
     private String name;
     private Float minCpu;
     private String chargeUnit;
     private BigDecimal price;
 
-    public PostAndPutProductPayload(ProductTypeEnum productType, String name, Float minCpu, String chargeUnit,
+    public ProductRequestPayload(ProductTypeEnum productType, String name, Float minCpu, String chargeUnit,
             BigDecimal price) {
         this.productType = productType;
         this.name = name;

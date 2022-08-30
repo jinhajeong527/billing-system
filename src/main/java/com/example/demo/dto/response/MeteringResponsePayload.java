@@ -1,8 +1,10 @@
-package com.example.demo.dto;
+package com.example.demo.dto.response;
 
 import java.util.List;
 
-public class MeteringResponseInfo {
+import com.example.demo.dto.OID;
+
+public class MeteringResponsePayload {
     Integer pcode;
     String pname;
     Integer agent;
@@ -12,11 +14,11 @@ public class MeteringResponseInfo {
     String dateTime;
     List<OID> oids;
     
-    public MeteringResponseInfo() {
+    public MeteringResponsePayload() {
     }
     
 
-    public MeteringResponseInfo(Integer pcode, String pname, Integer agent, Integer host, Double mcore, Integer urls,
+    public MeteringResponsePayload(Integer pcode, String pname, Integer agent, Integer host, Double mcore, Integer urls,
             String dateTime, List<OID> oids) {
         this.pcode = pcode;
         this.pname = pname;
