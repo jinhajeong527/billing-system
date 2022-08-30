@@ -16,10 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.example.demo.dto.PaginationPayload;
-import com.example.demo.dto.PostAndPutProductPayload;
-import com.example.demo.dto.ProductListPayload;
-import com.example.demo.dto.ProductPayload;
+import com.example.demo.dto.request.PaginationRequestPayload;
+import com.example.demo.dto.request.ProductRequestPayload;
+import com.example.demo.dto.response.ProductResponsePayload;
+import com.example.demo.dto.response.ProductsResonsePayload;
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
 import com.example.demo.exception.PriceInfoNotExistException;
@@ -42,7 +42,7 @@ public class ProductService {
     ProductChangeHistoryRepository productChangeHistoryRepository;
 
     @Transactional
-    public Product registerNewProduct(PostAndPutProductPayload productPayload) {
+    public Product registerNewProduct(ProductRequestPayload productPayload) {
         // 입력되지 않은 상품 정보가 있는지 체크한다.
         if(checkIfThereAnyNullProductInfo(productPayload))
             throw new ProductInfoNotExistException("Product info is needed to register new product");
@@ -60,34 +60,34 @@ public class ProductService {
     }
 
     @Transactional
-    public List<ProductPayload> getAllProducts() {
+    public List<ProductResponsePayload> getAllProducts() {
         List<Product> products = productRepository.findAll();
         
         if(products.isEmpty()) return null;
 
-        List<ProductPayload> productPayloads = getProductPayloadList(products);
+        List<ProductResponsePayload> productPayloads = getProductPayloadList(products);
         return productPayloads;
     }
 
     @Transactional
-    public ProductPayload getProductById(Integer productId) {
+    public ProductResponsePayload getProductById(Integer productId) {
         Product product = productRepository.findById(productId)
                             .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
         PriceHistory priceHistory = priceHistoryRepository.findFirstByProductOrderByCreateDateDesc(product);
-        ProductPayload productPayload = new ProductPayload(product, priceHistory);
+        ProductResponsePayload productPayload = new ProductResponsePayload(product, priceHistory);
         return productPayload;
     }
 
     @Transactional
-    public ProductListPayload getProducts(PaginationPayload paginationPayload) {
+    public ProductsResonsePayload getProducts(PaginationRequestPayload paginationPayload) {
         Pageable pageable = makePageRequest(paginationPayload);
         Page<Product> pagedProducts = productRepository.findAll(pageable);
         if(pagedProducts.getContent().isEmpty()) return null;
 
         // List<Product>를 PriceHistory 엔티티 추가하여 List<ProductPayload>로 만들어 준 후에 Page<ProductPayload>로 다시 바꿔준다.
         List<Product> products = pagedProducts.getContent();
-        List<ProductPayload> productPayloads = getProductPayloadList(products);
-        ProductListPayload productListPayload = new ProductListPayload(productPayloads, pagedProducts.getTotalPages(), pagedProducts.getNumber());
+        List<ProductResponsePayload> productPayloads = getProductPayloadList(products);
+        ProductsResonsePayload productListPayload = new ProductsResonsePayload(productPayloads, pagedProducts.getTotalPages(), pagedProducts.getNumber());
 
         return productListPayload;
     }
@@ -101,7 +101,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Product editProductInfo(Integer productId, PostAndPutProductPayload productPayload) {
+    public Product editProductInfo(Integer productId, ProductRequestPayload productPayload) {
         Product product = productRepository.findById(productId)
                             .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
         
@@ -122,23 +122,23 @@ public class ProductService {
     }
 
     // Product의 List<PriceHistory>에서 가장 최근의 가격 정보 추가해서 List<ProductPayLoad>로 리턴하는 메서드
-    public List<ProductPayload> getProductPayloadList(List<Product> products) {
-        List<ProductPayload> productPayloads = new ArrayList<>();
+    public List<ProductResponsePayload> getProductPayloadList(List<Product> products) {
+        List<ProductResponsePayload> productPayloads = new ArrayList<>();
         for(Product product : products) {
             // 해당 프로덕트가 가진 PriceHistory 중 가장 최근에 등록된 정보를 가져온다.
             PriceHistory priceHistory = priceHistoryRepository.findFirstByProductOrderByCreateDateDesc(product);
-            ProductPayload productPayload = new ProductPayload(product, priceHistory);
+            ProductResponsePayload productPayload = new ProductResponsePayload(product, priceHistory);
             productPayloads.add(productPayload);
         }
         return productPayloads;
     }
 
-    private boolean checkIfThereAnyNullProductInfo(PostAndPutProductPayload productPayload) {
+    private boolean checkIfThereAnyNullProductInfo(ProductRequestPayload productPayload) {
         return (productPayload.getName() == null || productPayload.getMinCpu() == null || 
                 productPayload.getChargeUnit() == null || productPayload.getProductType() == null);
     }
 
-    private Pageable makePageRequest(PaginationPayload paginationPayload) {
+    private Pageable makePageRequest(PaginationRequestPayload paginationPayload) {
         Sort sort = null;
         if(paginationPayload.getSort() != null) {
             if("desc".equals(paginationPayload.getOrder()))

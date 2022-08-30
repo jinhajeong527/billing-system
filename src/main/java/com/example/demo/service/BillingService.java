@@ -30,16 +30,12 @@ import com.example.demo.entity.Product;
 import com.example.demo.exception.BillingSystemException;
 import com.example.demo.repository.PriceHistoryRepository;
 import com.example.demo.repository.ProductRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class BillingService {
-    private static final Logger LOG =   LoggerFactory.getLogger(BillingService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BillingService.class);
     
     @Autowired
     ProductRepository productRepository;
@@ -49,7 +45,7 @@ public class BillingService {
     @Transactional
     public BillingResponsePayload getBillingInfo(BillingRequest billingRequest) throws BillingSystemException {
         // 1) 프로젝트의 사용 내역 담은 Json 데이터 파싱한다.
-        LOG.info("Started Parsing meteringList.json For {} / {}", billingRequest.getTargetYear(), billingRequest.getTargetMonth());
+        LOG.info("Started Parsing meteringList.json For {}-{}", billingRequest.getTargetYear(), billingRequest.getTargetMonth());
         BillingInfo billingPayload = parseMeteringList();
         List<MeteringInfo> meteringInfos = billingPayload.getMeteringList();
 

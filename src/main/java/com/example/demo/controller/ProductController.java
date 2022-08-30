@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dto.PaginationPayload;
-import com.example.demo.dto.PostAndPutProductPayload;
-import com.example.demo.dto.ProductListPayload;
-import com.example.demo.dto.ProductPayload;
+import com.example.demo.dto.request.PaginationRequestPayload;
+import com.example.demo.dto.request.ProductRequestPayload;
+import com.example.demo.dto.response.ProductResponsePayload;
+import com.example.demo.dto.response.ProductsResonsePayload;
 import com.example.demo.entity.Product;
 import com.example.demo.service.ProductService;
 
-@CrossOrigin(origins = "http://localhost:3000")
+
 @RestController
 @RequestMapping(path = "api/product")
 public class ProductController {
@@ -31,29 +31,29 @@ public class ProductController {
     ProductService productService;
     
     @PostMapping
-    public ResponseEntity<?> registerNewProduct(@RequestBody PostAndPutProductPayload productPayload) {
+    public ResponseEntity<?> registerNewProduct(@RequestBody ProductRequestPayload productPayload) {
         Product product = productService.registerNewProduct(productPayload);
         return new ResponseEntity<>(product, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
-        List<ProductPayload> productPayloads = productService.getAllProducts();
+        List<ProductResponsePayload> productPayloads = productService.getAllProducts();
         if(productPayloads == null)
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(productPayloads, HttpStatus.OK);
     }
     @GetMapping("/{productId}")
     public ResponseEntity<?> getProductById(@PathVariable(value = "productId") Integer productId) {
-        ProductPayload productPayload = productService.getProductById(productId);
+        ProductResponsePayload productPayload = productService.getProductById(productId);
         if(productPayload == null)
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(productPayload, HttpStatus.OK);
     }
 
     @PostMapping("/paging") // 파라미터에 page, size, sort를 키로 정해서 값 보내주면 되고, sort의 경우는 name,desc 와 같이 보내줄 수 있다. 
-    public ResponseEntity<?> getProducts(@RequestBody PaginationPayload paginationPayload) {
-        ProductListPayload productListPayload = productService.getProducts(paginationPayload);
+    public ResponseEntity<?> getProducts(@RequestBody PaginationRequestPayload paginationPayload) {
+        ProductsResonsePayload productListPayload = productService.getProducts(paginationPayload);
         if(productListPayload == null) 
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(productListPayload, HttpStatus.OK);
@@ -66,7 +66,7 @@ public class ProductController {
     }
     
     @PutMapping("/{productId}")
-    public ResponseEntity<?> editProductInfo(@PathVariable(value = "productId") Integer productId, @RequestBody PostAndPutProductPayload productPayload) {
+    public ResponseEntity<?> editProductInfo(@PathVariable(value = "productId") Integer productId, @RequestBody ProductRequestPayload productPayload) {
         Product product = productService.editProductInfo(productId, productPayload);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }

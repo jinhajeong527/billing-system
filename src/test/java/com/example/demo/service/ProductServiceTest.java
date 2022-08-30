@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.example.demo.dto.PostAndPutProductPayload;
+import com.example.demo.dto.request.ProductRequestPayload;
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
 import com.example.demo.exception.PriceInfoNotExistException;
@@ -38,8 +38,8 @@ public class ProductServiceTest {
     // 상품 정보 정상적으로 등록이 되어야 한다.
     @Test
     void shouldCreateUpdateAndDeleteProduct() throws Exception {
-        PostAndPutProductPayload postAndPutProductPayload = 
-                        new PostAndPutProductPayload(ProductTypeEnum.APM, "Application", 0.1F, 
+        ProductRequestPayload postAndPutProductPayload = 
+                        new ProductRequestPayload(ProductTypeEnum.APM, "Application", 0.1F, 
                                                      "CORE", new BigDecimal(25000.00));
         Product product = productService.registerNewProduct(postAndPutProductPayload);
 
@@ -70,8 +70,8 @@ public class ProductServiceTest {
     // 상품 등록 정보가 부분적으로 null 인 경우
     @Test
     void shouldReturnProductInfoNotExistException() throws Exception {
-        PostAndPutProductPayload postAndPutProductPayload = 
-                        new PostAndPutProductPayload(ProductTypeEnum.APM, null, null, 
+        ProductRequestPayload postAndPutProductPayload = 
+                        new ProductRequestPayload(ProductTypeEnum.APM, null, null, 
                                                      "CORE", new BigDecimal(25000.00));
         ProductInfoNotExistException e = assertThrows(ProductInfoNotExistException.class,
                     () -> productService.registerNewProduct(postAndPutProductPayload));//예외가 발생해야 한다.
@@ -82,8 +82,8 @@ public class ProductServiceTest {
     // 상품 가격 정보가 등록되어 있지 않을 경우
     @Test
     void shouldReturnPriceInfoNotExistException() throws Exception {
-        PostAndPutProductPayload postAndPutProductPayload = 
-                        new PostAndPutProductPayload(ProductTypeEnum.APM, "Application", 0.1F, 
+        ProductRequestPayload postAndPutProductPayload = 
+                        new ProductRequestPayload(ProductTypeEnum.APM, "Application", 0.1F, 
                                                      "CORE", null);
         PriceInfoNotExistException e = assertThrows(PriceInfoNotExistException.class,
                     () -> productService.registerNewProduct(postAndPutProductPayload));//예외가 발생해야 한다.
