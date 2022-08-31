@@ -1,5 +1,6 @@
 package com.example.demo.dto.response;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,8 +8,9 @@ public class BillingResponsePayload {
 
     List<MeteringResponsePayload> meteringList;
     Integer calculatedTotalHourPerCore;
-    Double totalFee;
-    Integer totalCore;
+    Double usedCorePerHour;
+    BigDecimal totalFee;
+    BigDecimal totalCore;
 
     public List<MeteringResponsePayload> getMeteringList() {
         return meteringList;
@@ -22,16 +24,22 @@ public class BillingResponsePayload {
     public void setCalculatedTotalHourPerCore(Integer calculatedTotalHourPerCore) {
         this.calculatedTotalHourPerCore = calculatedTotalHourPerCore;
     }
-    public Double getTotalFee() {
+    public Double getUsedCorePerHour() {
+        return usedCorePerHour;
+    }
+    public void setUsedCorePerHour(Double usedCorePerHour) {
+        this.usedCorePerHour = usedCorePerHour;
+    }
+    public BigDecimal getTotalFee() {
         return totalFee;
     }
-    public void setTotalFee(Double totalFee) {
+    public void setTotalFee(BigDecimal totalFee) {
         this.totalFee = totalFee;
     }
-    public Integer getTotalCore() {
+    public BigDecimal getTotalCore() {
         return totalCore;
     }
-    public void setTotalCore(Integer totalCore) {
+    public void setTotalCore(BigDecimal totalCore) {
         this.totalCore = totalCore;
     }
     public void add(MeteringResponsePayload meteringResponseInfo) { 
@@ -40,7 +48,6 @@ public class BillingResponsePayload {
         }
         meteringList.add(meteringResponseInfo);
     }
-
     
     
 }

@@ -56,19 +56,20 @@ public class BillingService {
         LOG.info("Full Fee Will Be Charged If {} Hours Used Per Core", totalHour);
 
         // 4) Product Price 정보를 통해 시간 당 Core 한 개의 사용 비용을 구한다.
-        double hourlyFeePerCore = getHourlyFeePerCore(totalHour, billingRequest.getProductId());
+        BigDecimal hourlyFeePerCore = getHourlyFeePerCore(totalHour, billingRequest.getProductId());
         LOG.info("{} KRW Will Be Charged Per Hour For Each Core Usage", hourlyFeePerCore);
         
         /* 
-        과금 유형이 CORE라고 하고, 한 개의 코어당 7월에 full로 사용했을 때 (24시간 * 31일) 사용료가 25,000KRW 라고 한다면 
-        7월 1일 오전 1시에 발생한 사용량의 측정을 위해서는 totalCore가 몇 개 쓰였는지를 확인하고, 총 4개에 같은 IP에 대해서 발생했다면
-        과금액은 4 * (25000 / (24*31)) 이 되겠지만, 만약 다른 IP가 있다? 그럼 사용한 것으로 간주하기 때문에 만약 이 시간에 2개의 IP가 발견이 되었다면
-        2 * 4 * (25000 / (24*31)) 와 같이 계산하여 7월 1일 오전 1시에 발생한 요금에 대해서 계산이 될 것이다.
+            과금 유형이 CORE라고 하고, 한 개의 코어당 7월에 full로 사용했을 때 (24시간 * 31일) 사용료가 25,000KRW 라고 한다면 
+            7월 1일 오전 1시에 발생한 사용량의 측정을 위해서는 totalCore가 몇 개 쓰였는지를 확인하고, 총 4개에 같은 IP에 대해서 발생했다면
+            과금액은 4 * (25000 / (24*31)) 이 되겠지만, 만약 다른 IP가 있다면 새로운 과금 대상으로 간주하기 때문에 만약 이 시간에 2개의 IP가 발견이 되었다면
+            2 * 4 * (25000 / (24*31)) 와 같이 계산하여 7월 1일 오전 1시에 발생한 요금에 대해서 계산이 될 것이다.
         */
 
         int calculatedTotalHourPerCore = 0;
-        double totalFee = 0.0;
-        int totalCore = 0;
+        BigDecimal totalCore = new BigDecimal(0);
+        BigDecimal totalFee = new BigDecimal(0.00);
+        
         // 5) 로그에서 보기 편하게 출력 및 프론트에서 보기 좋게 날짜 나타내기 위해 포맷 바꿔준다.
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -99,33 +100,39 @@ public class BillingService {
                 }
             }
 
-            // 9) 해당 시간동안 모니터링 제품 사용한 ip와 core수를 담아 주었으면 계산을 시작한다
+            // 9) 해당 시간 동안 모니터링 제품 사용한 ip와 core수를 담아 주었으면 계산을 시작한다
             // 예) key : 192.168.1.102 value: 4
             Iterator<String> keySetIterator = ipAndCoreMap.keySet().iterator();
             while(keySetIterator.hasNext()) {
-                // 해당 ip에서 한시간 동안 최대로 사용 했던 CORE의 수
+                // 해당 ip에서 한 시간 동안 최대로 사용 했던 CORE의 수
                 String ip = keySetIterator.next();
-                int coreCount = ipAndCoreMap.get(ip);
-                // 총 몇개의 코어가 사용되었는지도 청구서에 정보 알려주기 위해서 카운팅 한다.
-                totalCore += coreCount;
-                // 계산 중인 시간까지 대상 IP에 총 몇개의 코어가 사용되었는지를 로그로 출력한다.
+                BigDecimal coreCount = new BigDecimal(ipAndCoreMap.get(ip));
+                // 총 몇 개의 코어가 사용되었는지도 청구서에 정보 알려주기 위해서 카운팅 한다.
+                totalCore = totalCore.add(coreCount);
+                // 계산 중인 시간까지 대상 IP에 총 몇 개의 코어가 사용되었는지를 로그로 출력한다.
                 LOG.info("Total {} Core(s) Used Till {}", formatDate);
                 LOG.info("At {}, {} Uses {} Core(s). Hourly Fee Per Core Is {}", formatDate, ip, coreCount, hourlyFeePerCore);
-                // 코어 한 개당 한 시간 사용 비용에 사용된 코어수를 곱해준다.
-                totalFee += coreCount * hourlyFeePerCore;
-                // 가동 중이었던 시간 더해주기
+                // 해당 일시 청구 금액 : 코어 한 개당 한 시간 사용 비용에 사용된 코어수를 곱해준다.
+                BigDecimal hourlyFee = coreCount.multiply(hourlyFeePerCore);
+                totalFee = totalFee.add(hourlyFee);
+
+                // 가동 중이었던 일시 +1 해주기
                 calculatedTotalHourPerCore++;
 
-                LOG.info("Fee For {} With IP {} Using {} Core(s) Is {} KRW", formatDate, ip, coreCount, coreCount * hourlyFeePerCore);
+                LOG.info("Fee For {} With IP {} Using {} Core(s) Is {} KRW", formatDate, ip, coreCount, hourlyFee);
                 LOG.info("Current Total Fee Is {} KRW", totalFee);
             }
         }
+
         LOG.info("Total Fee For Target Month Is: {} KRW", totalFee);
         LOG.info("Total Uesd Hour For Target Month Is: {} hour", calculatedTotalHourPerCore);
         LOG.info("Total {} Cores Used", totalCore);
         billingResponsePayload.setCalculatedTotalHourPerCore(calculatedTotalHourPerCore);
         billingResponsePayload.setTotalFee(totalFee);
         billingResponsePayload.setTotalCore(totalCore);
+        // 한 시간에 총 평균 사용된 코어수를 계산한다.
+        Double usedCoreCountPerHour = totalCore.doubleValue() / calculatedTotalHourPerCore;
+        billingResponsePayload.setUsedCorePerHour(usedCoreCountPerHour);
         return billingResponsePayload;
     }
 
@@ -137,13 +144,13 @@ public class BillingService {
     }
 
     // 제품 비용에서 해당 월의 전체 시간으로 나눠준다.
-    public double getHourlyFeePerCore(int totalHour, int productId) {
+    public BigDecimal getHourlyFeePerCore(int totalHour, int productId) {
         Product product = productRepository.findById(productId).get();
         // 상품의 가장 최근 가격 가져온다.
         BigDecimal productPrice = priceHistoryRepository.findFirstByProductOrderByCreateDateDesc(product).getPrice();
         BigDecimal total = new BigDecimal(totalHour);
         BigDecimal devided = productPrice.divide(total, 2, RoundingMode.HALF_EVEN);
-        return devided.doubleValue();
+        return devided;
     }
     // targetMonth의 전체 시간을 구한다.
     private int getHoursOfTheMonth(int targetYear, int targetMonth) {
