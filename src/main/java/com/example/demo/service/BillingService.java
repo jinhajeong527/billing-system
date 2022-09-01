@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.BillingInfo;
@@ -42,7 +43,7 @@ public class BillingService {
     @Autowired
     PriceHistoryRepository priceHistoryRepository;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public BillingResponsePayload getBillingInfo(BillingRequest billingRequest) throws BillingSystemException {
         // 1) 프로젝트의 사용 내역 담은 Json 데이터 파싱한다.
         LOG.info("Started Parsing meteringList.json For {}-{}", billingRequest.getTargetYear(), billingRequest.getTargetMonth());

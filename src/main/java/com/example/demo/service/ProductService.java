@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -41,7 +42,7 @@ public class ProductService {
     @Autowired
     ProductChangeHistoryRepository productChangeHistoryRepository;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Product registerNewProduct(ProductRequestPayload productPayload) {
         // 입력되지 않은 상품 정보가 있는지 체크한다.
         if(checkIfThereAnyNullProductInfo(productPayload))
@@ -59,7 +60,7 @@ public class ProductService {
         return product;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public List<ProductResponsePayload> getAllProducts() {
         List<Product> products = productRepository.findAll();
         
@@ -69,7 +70,7 @@ public class ProductService {
         return productPayloads;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public ProductResponsePayload getProductById(Integer productId) {
         Product product = productRepository.findById(productId)
                             .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
@@ -78,7 +79,7 @@ public class ProductService {
         return productPayload;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public ProductsResonsePayload getProducts(PaginationRequestPayload paginationPayload) {
         Pageable pageable = makePageRequest(paginationPayload);
         Page<Product> pagedProducts = productRepository.findAll(pageable);
@@ -100,7 +101,7 @@ public class ProductService {
         return product;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Product editProductInfo(Integer productId, ProductRequestPayload productPayload) {
         Product product = productRepository.findById(productId)
                             .orElseThrow(() -> new ProductNotFoundException("No product found with this id: " + productId));
