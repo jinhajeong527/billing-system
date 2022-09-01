@@ -32,8 +32,8 @@ public class ProductController {
     
     @PostMapping
     public ResponseEntity<?> registerNewProduct(@RequestBody ProductRequestPayload productPayload) {
-        Product product = productService.registerNewProduct(productPayload);
-        return new ResponseEntity<>(product, HttpStatus.CREATED);
+        ProductResponsePayload productResponsePayload = productService.registerNewProduct(productPayload);
+        return new ResponseEntity<>(productResponsePayload, HttpStatus.CREATED);
     }
 
     @GetMapping

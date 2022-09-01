@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.example.demo.dto.request.ProductRequestPayload;
+import com.example.demo.dto.response.ProductResponsePayload;
 import com.example.demo.entity.PriceHistory;
 import com.example.demo.entity.Product;
 import com.example.demo.exception.PriceInfoNotExistException;
@@ -41,15 +42,15 @@ public class ProductServiceTest {
         ProductRequestPayload postAndPutProductPayload = 
                         new ProductRequestPayload(ProductTypeEnum.APM, "Application", 0.1F, 
                                                      "CORE", new BigDecimal(25000.00));
-        Product product = productService.registerNewProduct(postAndPutProductPayload);
+        ProductResponsePayload productResponsePayload = productService.registerNewProduct(postAndPutProductPayload);
+        
+        Product findProduct = productRepository.findById(productResponsePayload.getProduct().getId()).get();
 
-        Product findProduct = productRepository.findById(product.getId()).get();
-
-        assertEquals(product.getProductType(), findProduct.getProductType());
-        assertEquals(product.getName(), findProduct.getName());
-        assertEquals(product.getMinCpu(), findProduct.getMinCpu());
-        assertEquals(product.getChargeUnit(), findProduct.getChargeUnit());
-        assertEquals(product.getPriceHistories().get(0).getPrice(), findProduct.getPriceHistories().get(0).getPrice());
+        assertEquals(productResponsePayload.getProduct().getProductType(), findProduct.getProductType());
+        assertEquals(productResponsePayload.getProduct().getName(), findProduct.getName());
+        assertEquals(productResponsePayload.getProduct().getMinCpu(), findProduct.getMinCpu());
+        assertEquals(productResponsePayload.getProduct().getChargeUnit(), findProduct.getChargeUnit());
+        assertEquals(productResponsePayload.getPriceHistory().getPrice(), findProduct.getPriceHistories().get(0).getPrice());
 
         // Product 정보를 수정한다.
         findProduct.setMinCpu(0.2F);

@@ -43,7 +43,7 @@ public class ProductService {
     ProductChangeHistoryRepository productChangeHistoryRepository;
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Product registerNewProduct(ProductRequestPayload productPayload) {
+    public ProductResponsePayload registerNewProduct(ProductRequestPayload productPayload) {
         // 입력되지 않은 상품 정보가 있는지 체크한다.
         if(checkIfThereAnyNullProductInfo(productPayload))
             throw new ProductInfoNotExistException("Product info is needed to register new product");
@@ -57,7 +57,8 @@ public class ProductService {
         PriceHistory priceHistory = new PriceHistory(price);
         product.add(priceHistory);
         product = productRepository.save(product);
-        return product;
+        ProductResponsePayload productResponsePayload = new ProductResponsePayload(product, priceHistory);
+        return productResponsePayload;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -119,6 +120,7 @@ public class ProductService {
 
         product.setUpdateDate(LocalDateTime.now());
         product = productRepository.save(product);
+        
         return product;
     }
 
